@@ -1,5 +1,7 @@
 package main
 
+// go run main.go -name "tony" --age 28 --married=true -d=1h30m
+
 import (
 	"flag"
 	"fmt"
