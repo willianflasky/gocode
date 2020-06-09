@@ -15,7 +15,7 @@ func New() *Engine {
 	return &Engine{router: newRouter()}
 }
 
-// addRoute  调用router.addRoute
+// addRoute  调用router.addRoute(GET, /hello, hello)
 func (engine *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
 	engine.router.addRoute(method, pattern, handler)
 }
