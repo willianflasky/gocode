@@ -1,33 +1,62 @@
 package gee
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+)
 
 // HandlerFunc defines the request handler used by gee.  HandlerFunc -> Context -> (request, writer, method...)
 type HandlerFunc func(*Context)
 
 // Engine implement the interface of ServeHTTP. Engine -> router -> handlers
 type Engine struct {
+	*RouterGroup
 	router *router
+	groups []*RouterGroup // store all groups
+}
+
+// RouterGroup 路由组
+type RouterGroup struct {
+	prefix      string
+	middlewares []HandlerFunc // support middleware
+	parent      *RouterGroup  // support nesting
+	engine      *Engine       // all groups share a Engine instance
 }
 
 // New is the constructor of gee. Engine 初始化函数
 func New() *Engine {
-	return &Engine{router: newRouter()}
+	engine := &Engine{router: newRouter()}             // new engine
+	engine.RouterGroup = &RouterGroup{engine: engine}  // 这里存上new routergroup, 再把engine存到new routergroup
+	engine.groups = []*RouterGroup{engine.RouterGroup} // 将routergroup存到routergroup切片;
+	return engine
 }
 
-// addRoute  调用router.addRoute(GET, /hello, hello)
-func (engine *Engine) addRoute(method string, pattern string, handler HandlerFunc) {
-	engine.router.addRoute(method, pattern, handler)
+// Group 绑定group方法
+func (group *RouterGroup) Group(prefix string) *RouterGroup {
+	engine := group.engine
+	newGroup := &RouterGroup{
+		prefix: group.prefix + prefix,
+		parent: group,
+		engine: engine,
+	}
+	engine.groups = append(engine.groups, newGroup)
+	return newGroup
+}
+
+func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
+	pattern := group.prefix + comp
+	log.Printf("Route %4s - %s", method, pattern)
+	group.engine.router.addRoute(method, pattern, handler)
 }
 
 // GET defines the method to add GET request.  在使用GET方法时，就将路由映射就增加到 router.handlers
-func (engine *Engine) GET(pattern string, handler HandlerFunc) {
-	engine.addRoute("GET", pattern, handler)
+func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
+	group.addRoute("GET", pattern, handler)
 }
 
 // POST defines the method to add POST request  在使用POST方法时，就将路由映射就增加到 router.handlers
-func (engine *Engine) POST(pattern string, handler HandlerFunc) {
-	engine.addRoute("POST", pattern, handler)
+func (group *RouterGroup) POST(pattern string, handler HandlerFunc) {
+	group.addRoute("POST", pattern, handler)
 }
 
 // Run defines the method to start a http server 运行
