@@ -7,7 +7,7 @@ import (
 
 // index 根
 func index(c *gee.Context) {
-	c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
+	c.HTML(http.StatusOK, "gee.tmpl", gee.H{"title": "my gee"})
 }
 
 // hello 业务
@@ -36,7 +36,7 @@ func reFilePath(c *gee.Context) {
 }
 
 func v1root(c *gee.Context) {
-	c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
+	c.HTML(http.StatusOK, "gee.tmpl", gee.H{"title": "my gee"})
 }
 
 func v1world(c *gee.Context) {
@@ -47,6 +47,8 @@ func v1world(c *gee.Context) {
 func main() {
 	r := gee.New()
 	r.Use(gee.Logger())
+	r.Static("/static", "./static")
+	r.LoadHTMLGlob("templates/*")
 	// r.GET("/", index)
 	// r.GET("/hello", hello)
 	// r.POST("/login", login)
