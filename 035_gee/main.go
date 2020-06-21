@@ -54,6 +54,10 @@ func main() {
 	// r.POST("/login", login)
 	r.GET("/hello/:name", reHello)
 	r.GET("/assets/*filepath", reFilePath)
+	r.GET("/panic", func(c *gee.Context) {
+		names := []string{"geektutu"}
+		c.String(http.StatusOK, names[100])
+	})
 	v1 := r.Group("v1")
 	{
 		v1.GET("/", v1root)
