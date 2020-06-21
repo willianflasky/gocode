@@ -46,6 +46,7 @@ func v1world(c *gee.Context) {
 
 func main() {
 	r := gee.New()
+	r.Use(gee.Logger())
 	// r.GET("/", index)
 	// r.GET("/hello", hello)
 	// r.POST("/login", login)

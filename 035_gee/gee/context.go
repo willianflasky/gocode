@@ -20,6 +20,9 @@ type Context struct {
 	Params map[string]string
 	// response info
 	StatusCode int
+	// middleware
+	handlers []HandlerFunc
+	index    int
 }
 
 // newContext  为Context绑定的析构函数
@@ -29,10 +32,20 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1,
 	}
 }
 
 // ===>以下为Context类型的功能方法<===
+
+// Next 下一个中间键
+func (c *Context) Next() {
+	c.index++
+	s := len(c.handlers)
+	for ; c.index < s; c.index++ {
+		c.handlers[c.index](c)
+	}
+}
 
 // Param 正则的关键字参数
 func (c *Context) Param(key string) string {
