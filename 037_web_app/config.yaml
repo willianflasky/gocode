@@ -2,6 +2,8 @@ name: "web_app"
 mode: "dev"
 port: 8080
 version: "v0.1.5"
+start_time: "2020-07-20"
+machine_id: 1
 log:
   level: "debug"
   filename: "./logs/web_app.log"
@@ -9,10 +11,10 @@ log:
   max_age: 30
   max_backups: 7
 mysql:
-  host: "127.0.0.1"
+  host: "localhost"
   port: 3306
-  user: "mygo"
-  password: "mygo"
+  user: "root"
+  password: "root"
   dbname: "db1"
   max_open_conns: 200
   max_idle_conns: 50

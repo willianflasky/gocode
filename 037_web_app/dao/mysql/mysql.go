@@ -9,28 +9,29 @@ import (
 	"go.uber.org/zap"
 )
 
-var db *sqlx.DB
+var DB *sqlx.DB
 
 // Init mysql
 func Init(cfg *settings.MySQLConfig) (err error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		cfg.User,
 		cfg.Password,
 		cfg.Host,
 		cfg.Port,
-		cfg.DbName,
+		cfg.DB,
 	)
-	db, err := sqlx.Connect("mysql", dsn)
+	DB, err = sqlx.Connect("mysql", dsn)
 	if err != nil {
 		zap.L().Error("connect DB failed", zap.Error(err))
 		return
 	}
-	db.SetMaxIdleConns(cfg.MaxIdleConns)
-	db.SetMaxOpenConns(cfg.MaxOpenConns)
+	DB.SetMaxIdleConns(cfg.MaxIdleConns)
+	DB.SetMaxOpenConns(cfg.MaxOpenConns)
+	fmt.Println("conn success...")
 	return
 }
 
 // Close 关闭
 func Close() {
-	_ = db.Close()
+	_ = DB.Close()
 }

@@ -9,9 +9,11 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"web_app/controller"
 	"web_app/dao/mysql"
 	"web_app/dao/redis"
 	"web_app/logger"
+	"web_app/pkg/snowflake"
 	"web_app/routes"
 	"web_app/settings"
 
@@ -28,7 +30,7 @@ func main() {
 	fmt.Println(settings.Conf.LogConfig == nil)
 
 	// 2. 初始化日志
-	if err := logger.Init(settings.Conf.LogConfig); err != nil {
+	if err := logger.Init(settings.Conf.LogConfig, settings.Conf.Mode); err != nil {
 		fmt.Printf("init logger failed, err:%v\n", err)
 		return
 	}
@@ -49,10 +51,22 @@ func main() {
 	}
 	defer redis.Close()
 
-	// 5. 注册路由
+	// 5. 初始化 ID生成器
+	if err := snowflake.Init(settings.Conf.StartTime, settings.Conf.MachineID); err != nil {
+		fmt.Printf("init snowflake failed, err:%v\n", err)
+		return
+	}
+
+	// 6. 初始化gin框架内置的校验翻译
+	if err := controller.InitTrans("zh"); err != nil {
+		fmt.Printf("init validator trns failed, err: %v\n", err)
+		return
+	}
+
+	// 7. 注册路由
 	r := routes.Setup(settings.Conf.Mode)
 
-	// 6. 启动服务（优雅关机）
+	// 8. 启动服务（优雅关机）
 	fmt.Println(settings.Conf.Port)
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", settings.Conf.Port),
